@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Employee Directory</string>
+    <string name="employee_details">Employee Details</string>
+    <string name="employee_photo">Employee Photo</string>
+    <string name="detail_header1">Call Office</string>
+    <string name="detail_header2">Call Mobile</string>
+    <string name="detail_header3">SMS</string>
+    <string name="detail_header4">Email</string>
+    <string name="place_holder">Text will be replaced</string>
+    <string name="action_settings">Settings</string>
 </resources>
