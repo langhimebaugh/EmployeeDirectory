@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<employees>
+    <employee>
+        <id>1</id>
+        <firstName>John</firstName>
+        <lastName>Doe</lastName>
+        <title>CEO</title>
+        <city>San Francisco, CA</city>
+        <managerId>0</managerId>
+        <department>Corporate</department>
+        <officePhone>123-456-0001</officePhone>
+        <mobilePhone>987-654-1234</mobilePhone>
+        <email>John@mail.com</email>
+        <picture>placeholder.jpg</picture>
+    </employee>
+    <employee>
+        <id>2</id>
+        <firstName>Barack</firstName>
+        <lastName>Obama</lastName>
+        <title>President</title>
+        <city>Washington DC</city>
+        <department>Corporate</department>
+        <managerId>0</managerId>
+        <officePhone>123-456-0002</officePhone>
+        <mobilePhone>781-000-0002</mobilePhone>
+        <email>Barack@mail.com</email>
+        <picture>barack_obama.jpg</picture>
+    </employee>
+    <employee>
+        <id>3</id>
+        <firstName>Joe</firstName>
+        <lastName>Biden</lastName>
+        <title>VP</title>
+        <city>Washington DC</city>
+        <managerId>2</managerId>
+        <department>Corporate</department>
+        <officePhone>123-456-0003</officePhone>
+        <mobilePhone>987-654-1234</mobilePhone>
+        <email>Joe@mail.com</email>
+        <picture>joe_biden.jpg</picture>
+    </employee>
+    <employee>
+        <id>4</id>
+        <firstName>Hillary</firstName>
+        <lastName>Clinton</lastName>
+        <title>Secretary of State</title>
+        <city>Washington DC</city>
+        <managerId>2</managerId>
+        <department>Corporate</department>
+        <officePhone>123-456-0004</officePhone>
+        <mobilePhone>987-654-1234</mobilePhone>
+        <email>Hillary@mail.com</email>
+        <picture>hillary_clinton.jpg</picture>
+    </employee>
+</employees>
