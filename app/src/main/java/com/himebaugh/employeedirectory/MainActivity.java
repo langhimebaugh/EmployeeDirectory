@@ -2,6 +2,7 @@ package com.himebaugh.employeedirectory;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.SimpleCursorAdapter;
@@ -21,25 +22,33 @@ import java.util.List;
 
 //  PURPOSE: Learning how to build an Android App.
 
+//	Step 5: Create a ContentProvider to access the database.
+//			1) Create EmployeeProvider
+//			2) Modify LoadEmployeesTask To implement the new ContentProvider (MainActivity)
+//			3) Remove getAllEmployeesCursor() method from EmployeeDatabase
+
+//	Step 4: Pass data to DetailActivity to display more data and provide other functionality (w/ intent.putExtra)
+//			1) Create DetailActivity
+//			2) Create activity_detail.xml  (in res/layout)
+//			3) Add DetailActivity to AndroidManifest.xml
+//			4) Add uses-permissions to AndroidManifest.xml
+//			5) Modify strings.xml  (in res/values)
+//			6) Create mail.png, phone.png, sms.png  (in res/drawable)
+//			7) Create employee_photo.jpg  (in assets/pics)
+
+//	Step 3: Save (Persist) the data into a SQLite Database & Load a ListView from a SQLite Database
+//			1) Modify LoadEmployeesTask to load the database.
+//			2) The database is created when called for the first time. This will also call the EmployeeXmlParser from within.
+//			3) A Cursor is returned that exposes results from a query on a SQLiteDatabase.
+//			4) The SimpleCursorAdapter displays the data from the Cursor.
+
+//	Step 2: Load data into the ListActivity from an XML file via XmlParser
+//			1) employee_list.xml  (in res/xml)
+//			2) Employee.java
+//			3) EmployeeXmlParser.java
+
 //	Step 1: Create a blank App in eclipse. Modify it to display a ListActivity with some data.
 //			1) activity_main.xml  (in res/layout)
-//  Step 2: Load data into the ListActivity from an XML file via XmlParser
-//          1) employee_list.xml  (in res/xml)
-//          2) Employee.java
-//          3) EmployeeXmlParser.java
-//  Step 3: Save (Persist) the data into a SQLite Database & Load a ListView from a SQLite Database
-//          1) Modify LoadEmployeesTask to load the database.
-//          2) The database is created when called for the first time. This will also call the EmployeeXmlParser from within.
-//          3) A Cursor is returned that exposes results from a query on a SQLiteDatabase.
-//          4) The SimpleCursorAdapter displays the data from the Cursor.
-//  Step 4: Pass data to DetailActivity to display more data and provide other functionality (w/ intent.putExtra)
-//          1) Create DetailActivity
-//          2) Create activity_detail.xml  (in res/layout)
-//          3) Add DetailActivity to AndroidManifest.xml
-//          4) Add uses-permissions to AndroidManifest.xml
-//          5) Modify strings.xml  (in res/values)
-//          6) Create mail.png, phone.png, sms.png  (in res/drawable)
-//          7) Create employee_photo.jpg  (in assets/pics)
 
 public class MainActivity extends AppCompatActivity {
 
@@ -64,9 +73,20 @@ public class MainActivity extends AppCompatActivity {
         protected Cursor doInBackground(String... args) {
 
             // query the database and return a cursor of employees.
-            EmployeeDatabase employeeDatabase = new EmployeeDatabase(getApplicationContext());
+            // EmployeeDatabase employeeDatabase = new EmployeeDatabase(getApplicationContext());
+            // Cursor cursor = employeeDatabase.getAllEmployeesCursor();
 
-            Cursor cursor = employeeDatabase.getAllEmployeesCursor();
+            // To implement the ContentProvider
+            // Replace the 2 lines above with the lines below
+            // .... and remember to modify AndroidManifest.xml
+            Uri uri = EmployeeProvider.CONTENT_URI;
+            String[] projection = { EmployeeDatabase.COLUMN_ID, EmployeeDatabase.COLUMN_FIRSTNAME, EmployeeDatabase.COLUMN_LASTNAME, EmployeeDatabase.COLUMN_TITLE, EmployeeDatabase.COLUMN_DEPARTMENT,
+                    EmployeeDatabase.COLUMN_CITY, EmployeeDatabase.COLUMN_OFFICE_PHONE, EmployeeDatabase.COLUMN_MOBILE_PHONE, EmployeeDatabase.COLUMN_EMAIL, EmployeeDatabase.COLUMN_PICTURE };
+            String selection = null;
+            String[] selectionArgs = null;
+            String sortOrder = EmployeeDatabase.COLUMN_LASTNAME + " COLLATE LOCALIZED ASC";
+
+            Cursor cursor = getContentResolver().query(uri, projection, selection, selectionArgs, sortOrder);
 
             return cursor;
         }

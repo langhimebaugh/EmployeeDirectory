@@ -57,22 +57,6 @@ public class EmployeeDatabase extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public Cursor getAllEmployeesCursor() {
-
-        SQLiteDatabase db = this.getReadableDatabase();
-
-        Cursor cursor = db.query(TABLE_EMPLOYEES, new String[]{COLUMN_ID, COLUMN_FIRSTNAME, COLUMN_LASTNAME, COLUMN_TITLE, COLUMN_DEPARTMENT, COLUMN_CITY, COLUMN_OFFICE_PHONE, COLUMN_MOBILE_PHONE, COLUMN_EMAIL, COLUMN_PICTURE}, null, null, null, null, null);
-
-        if (cursor != null) {
-            cursor.moveToFirst();
-        }
-
-        // cursor.close();
-        db.close();
-
-        return cursor;
-    }
-
     private void seedData(SQLiteDatabase db) {
 
         // CALL XMLPULLPARSER & RETURN AN ArrayList OF EMPLOYEES
