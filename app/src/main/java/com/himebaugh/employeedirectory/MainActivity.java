@@ -1,17 +1,29 @@
 package com.himebaugh.employeedirectory;
 
+import android.annotation.TargetApi;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
+// import android.widget.SearchView;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -21,6 +33,19 @@ import java.util.List;
 //  see http://www.adobe.com/devnet/flex/articles/employee-directory-android-flex.html
 
 //  PURPOSE: Learning how to build an Android App.
+
+//  Step 6: Create a Search Interface using Android's search dialog.
+//          1) Modify MainActivity (add SearchView to onCreateOptionsMenu, add onSearchRequested() to onOptionsItemSelected )
+//          2) Modify EmployeeProvider (Add Search logic within the ContentProvider)
+//          3) Create SearchableActivity
+//          4) Create searchable.xml  (in res/xml)
+//          5) Modify main.xml  (in res/menu)
+//          6) Modify strings.xml  (in res/values)
+//          7) Modify AndroidManifest.xml
+//  Step 6B: Pass data to DetailActivity using Intent.ACTION_VIEW in place of intent.putExtra
+//          1) Modify MainActivity (add Intent.ACTION_VIEW in onListItemClick )
+//          2) Modify DetailActivity
+//          3) Modify AndroidManifest.xml (add android:mimeType="vnd.android.cursor.item...)
 
 //	Step 5: Create a ContentProvider to access the database.
 //			1) Create EmployeeProvider
@@ -52,6 +77,8 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = MainActivity.class.getSimpleName();
+    
     public List<Employee> employees = null;
 
     //  private ListAdapter listAdapter;
@@ -62,6 +89,21 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        listView = findViewById(R.id.list);
+
+        listView.setOnItemClickListener(new OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                Log.i(TAG, "onItemClick: ");
+
+                Uri details = Uri.withAppendedPath(EmployeeProvider.CONTENT_URI, "" + id);
+                Intent detailsIntent = new Intent(Intent.ACTION_VIEW, details);
+                startActivity(detailsIntent);
+            }
+        });
 
         // Parse xml data in a non-ui thread
         new LoadEmployeesTask().execute();
@@ -117,50 +159,52 @@ public class MainActivity extends AppCompatActivity {
                     R.id.list_item_picture
             };
 
-            SimpleCursorAdapter records = new SimpleCursorAdapter(getBaseContext(), R.layout.list_item, cursor, dataColumns, viewIDs, 0);
+            SimpleCursorAdapter adapter = new SimpleCursorAdapter(getBaseContext(), R.layout.list_item, cursor, dataColumns, viewIDs, 0);
 
-            listView = (ListView) findViewById(R.id.list);
-            if (listView != null) {
-                listView.setAdapter(records);
-            }
-
-            listView.setOnItemClickListener(new OnItemClickListener() {
-
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                    // get values from selected ListItem
-                    String empID = ((TextView) view.findViewById(R.id.list_item_emp_id)).getText().toString();
-                    String name = ((TextView) view.findViewById(R.id.list_item_name)).getText().toString();
-                    String title = ((TextView) view.findViewById(R.id.list_item_title)).getText().toString();
-                    String department = ((TextView) view.findViewById(R.id.list_item_department)).getText().toString();
-                    String city = ((TextView) view.findViewById(R.id.list_item_city)).getText().toString();
-                    String officePhone = ((TextView) view.findViewById(R.id.list_item_office_phone)).getText().toString();
-                    String mobilePhone = ((TextView) view.findViewById(R.id.list_item_mobile_phone)).getText().toString();
-                    String email = ((TextView) view.findViewById(R.id.list_item_email)).getText().toString();
-                    String picture = ((TextView) view.findViewById(R.id.list_item_picture)).getText().toString();
-
-                    // Start new intent
-                    // getApplicationContext() ?
-                    Intent intent = new Intent(getBaseContext(), DetailActivity.class);
-                    intent.putExtra("empID", empID);
-                    intent.putExtra("name", name);
-                    intent.putExtra("title", title);
-                    intent.putExtra("department", department);
-                    intent.putExtra("city", city);
-                    intent.putExtra("officePhone", officePhone);
-                    intent.putExtra("mobilePhone", mobilePhone);
-                    intent.putExtra("email", email);
-                    intent.putExtra("picture", picture);
-                    startActivity(intent);
-
-                }
-            });
-
+            listView.setAdapter(adapter);
 
         }
 
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+
+        // Get the SearchView and set the searchable configuration
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setIconifiedByDefault(false);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Log.i(TAG, "onQueryTextSubmit: ");
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                Log.i(TAG, "onQueryTextChange: ");
+                return false;
+            }
+        });
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_search:
+                onSearchRequested();
+                return true;
+            default:
+                return false;
+        }
     }
 
 //    public class MainActivity extends AppCompatActivity  implements OnItemClickListener {
@@ -174,5 +218,6 @@ public class MainActivity extends AppCompatActivity {
 //                break;
 //        }
 //    }
+
 
 }

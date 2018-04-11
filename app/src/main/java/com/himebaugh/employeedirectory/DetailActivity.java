@@ -1,12 +1,15 @@
 package com.himebaugh.employeedirectory;
 
 import android.Manifest;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -45,6 +48,9 @@ public class DetailActivity extends AppCompatActivity implements OnClickListener
     private TextView mEmail;
     private ImageView mPicture;
 
+    private int mID;
+    public Uri uri;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,6 +64,11 @@ public class DetailActivity extends AppCompatActivity implements OnClickListener
         // getting intent data
         Intent intent = getIntent();
 
+        Uri launchData = intent.getData();
+        mID = Integer.parseInt(launchData.getLastPathSegment());
+
+        uri = ContentUris.withAppendedId(EmployeeProvider.CONTENT_URI, mID);
+
         // Update values on the screen with XML values from previous intent
         mName = (TextView) findViewById(R.id.activity_detail_name);
         mTitle = (TextView) findViewById(R.id.activity_detail_title);
@@ -68,15 +79,6 @@ public class DetailActivity extends AppCompatActivity implements OnClickListener
         mSms = (TextView) findViewById(R.id.activity_detail_sms);
         mEmail = (TextView) findViewById(R.id.activity_detail_email);
         mPicture = (ImageView) findViewById(R.id.activity_detail_picture);
-
-        mName.setText(intent.getStringExtra(KEY_NAME));
-        mTitle.setText(intent.getStringExtra(KEY_TITLE));
-        mDepartment.setText(intent.getStringExtra(KEY_DEPARTMENT));
-        mCity.setText(intent.getStringExtra(KEY_CITY));
-        mOfficePhone.setText(intent.getStringExtra(KEY_OFFICEPHONE));
-        mMobilePhone.setText(intent.getStringExtra(KEY_MOBILEPHONE));
-        mSms.setText(intent.getStringExtra(KEY_MOBILEPHONE));
-        mEmail.setText(intent.getStringExtra(KEY_EMAIL));
 
         // listen for button clicks
         findViewById(R.id.activity_detail_call_office_button).setOnClickListener(this);
@@ -93,13 +95,57 @@ public class DetailActivity extends AppCompatActivity implements OnClickListener
         TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
         telephonyManager.listen(phoneListener, PhoneStateListener.LISTEN_CALL_STATE);
 
-        InputStream is;
-        try {
-            is = getAssets().open("pics/" + intent.getStringExtra(KEY_PICTURE));
-            Bitmap bit = BitmapFactory.decodeStream(is);
-            mPicture.setImageBitmap(bit);
-        } catch (IOException e) {
-            e.printStackTrace();
+        // Parse xml data in a non-ui thread
+        new LoadEmployeesTask().execute();
+    }
+
+    private class LoadEmployeesTask extends AsyncTask<String, Void, Cursor> {
+
+        @Override
+        protected Cursor doInBackground(String... args) {
+
+            String[] projection = { EmployeeDatabase.COLUMN_ID, EmployeeDatabase.COLUMN_FIRSTNAME,
+                    EmployeeDatabase.COLUMN_LASTNAME, EmployeeDatabase.COLUMN_TITLE,
+                    EmployeeDatabase.COLUMN_DEPARTMENT, EmployeeDatabase.COLUMN_CITY,
+                    EmployeeDatabase.COLUMN_OFFICE_PHONE, EmployeeDatabase.COLUMN_MOBILE_PHONE,
+                    EmployeeDatabase.COLUMN_EMAIL, EmployeeDatabase.COLUMN_PICTURE };
+            String selection = null;
+            String[] selectionArgs = null;
+            String sortOrder = null;
+
+            Cursor cursor = getContentResolver().query(uri, projection, selection, selectionArgs, sortOrder);
+
+            return cursor;
+        }
+
+        @Override
+        protected void onPostExecute(Cursor cursor) {
+
+            if (cursor != null && cursor.getCount() > 0) {
+                cursor.moveToFirst();
+
+                mName.setText(cursor.getString(cursor.getColumnIndex(EmployeeDatabase.COLUMN_FIRSTNAME)));
+                mName.setText(cursor.getString(cursor.getColumnIndex(EmployeeDatabase.COLUMN_LASTNAME)));
+
+                mTitle.setText(cursor.getString(cursor.getColumnIndex(EmployeeDatabase.COLUMN_TITLE)));
+                mDepartment.setText(cursor.getString(cursor.getColumnIndex(EmployeeDatabase.COLUMN_DEPARTMENT)));
+                mCity.setText(cursor.getString(cursor.getColumnIndex(EmployeeDatabase.COLUMN_CITY)));
+                mOfficePhone.setText(cursor.getString(cursor.getColumnIndex(EmployeeDatabase.COLUMN_OFFICE_PHONE)));
+                mMobilePhone.setText(cursor.getString(cursor.getColumnIndex(EmployeeDatabase.COLUMN_MOBILE_PHONE)));
+                mSms.setText(cursor.getString(cursor.getColumnIndex(EmployeeDatabase.COLUMN_MOBILE_PHONE)));
+                mEmail.setText(cursor.getString(cursor.getColumnIndex(EmployeeDatabase.COLUMN_EMAIL)));
+
+                InputStream is;
+                try {
+                    is = getAssets().open(
+                            "pics/" + cursor.getString(cursor.getColumnIndex(EmployeeDatabase.COLUMN_PICTURE)));
+                    Bitmap bit = BitmapFactory.decodeStream(is);
+                    mPicture.setImageBitmap(bit);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
         }
 
     }
