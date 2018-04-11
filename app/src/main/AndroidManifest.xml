@@ -76,6 +76,52 @@
             android:multiprocess="true">
         </provider>
 
+        <!-- App Widget 1 -->
+        <receiver
+            android:name=".EmployeeWidgetProvider"
+            android:label="Employee Widget 1" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget" />
+        </receiver>
+
+        <!-- App Widget 2 w/ Service -->
+        <receiver
+            android:name=".EmployeeWidgetProvider2"
+            android:label="Employee Widget 2" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget" />
+        </receiver>
+
+        <service android:name=".EmployeeWidgetService2" />
+
+        <!-- App Widget 3 (StackWidget) -->
+        <receiver
+            android:name=".EmployeeStackWidgetProvider"
+            android:label="Employee Widget 3" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/stack_widget" />
+        </receiver>
+
+        <service
+            android:name=".EmployeeStackWidgetService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
     </application>
 
 </manifest>
